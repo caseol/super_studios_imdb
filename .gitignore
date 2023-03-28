@@ -1,0 +1,6 @@
+.idea
+.idea/
+venv/
+venv/*
+workers/__pycache__/
+workers/__pycache__/*

@@ -61,7 +61,7 @@ class WriteContentDb(object):
                                      result['reviews_count'], ','.join(result['keywords']), result['filming_location'],
                                      result['aka'], result['poster_url'], result['trailer_url'],
                                      result['trailer_download_url'], result['trailer_thumbnail_url'],
-                                     ','.join(result['keywords'])]
+                                     ','.join(result['distributors'])]
                     try:
                         self.cursor.execute(insert_sql, insert_values)
                         self.db.commit()
