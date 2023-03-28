@@ -17,11 +17,13 @@ wcd = WriteContentDb(queue=queue).start()
 
 # lê da do arquivo CSV todos os IMDB IDs
 imdb_ids = pd.read_csv("source/ids_imdb.csv")
+# divide a base de IDs do IMDB em 6 partes
 imdb_main_parts = np.array_split(imdb_ids, 6)
-
+# cada código vai usar 1 parte principal que será dividida em 8 sub-partes, para que cada sub-parte
+# possa ser processada por uma thread específica
 imdb_parts = np.array_split(imdb_main_parts[1], 8)
 
-
+# worker que será passada ao ThreadPoolExecutor
 def process_imdb(imdb_ids):
     # instancia objeto para API IMDB
     imdb = IMDb()
