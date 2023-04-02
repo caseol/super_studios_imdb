@@ -1,0 +1,1 @@
+nohup python3 super_studios_enrich_multi_threading.py > process_imdb.log | tail -f process_imdb.log &
