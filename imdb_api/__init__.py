@@ -132,6 +132,34 @@ class IMDb:
 
         return info
 
+    def getBoxOffice(self, imdb_id):
+        budget = ""
+        gross_world = ""
+        try:
+            #imdb_id = IMDb.getIdFromSearch(self, imdb_id)
+            source = IMDb.getPage(IMDb.url+"/title/"+imdb_id)
+
+            div = source.find("div", {"data-testid": "title-boxoffice-section"})
+
+
+            for li in div.find_all("li", {"data-testid": "title-boxoffice-budget"}):
+                span = li.find("span", {"class": 'ipc-metadata-list-item__list-content-item'})
+                if span.text != "":
+                    budget = span.text
+                else:
+                    budget = ""
+
+            for li in div.find_all("li", {"data-testid": "title-boxoffice-cumulativeworldwidegross"}):
+                span = li.find("span", {"class": 'ipc-metadata-list-item__list-content-item'})
+                if span.text != "":
+                    gross_world = span.text
+                else:
+                    gross_world = ""
+        except:
+            return "", ""
+
+        return budget, gross_world
+
     def getGenres(self, imdb_id, details=None):
         try:
             details = IMDb.getDetails(self, imdb_id, details)
@@ -291,6 +319,10 @@ class IMDb:
             features["trailer_download_url"] = IMDb.getTrailerDownloadURL(self, imdb_id, details)
             features["trailer_thumbnail_url"] = IMDb.getTrailerThumbnailURL(self, imdb_id, details)
             features["distributors"] = IMDb.getDistributorsInfo(self, imdb_id)
+            budget, gross_world = IMDb.getBoxOffice(self, imdb_id)
+            features["budget"] = budget
+            features["gross_world"] = gross_world
+
         if features != {}:
             return features
     

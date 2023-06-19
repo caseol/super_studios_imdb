@@ -51,7 +51,11 @@ class WriteContentDb(object):
                 result = self.Q.get()
                 if result is not None:
                     print("Gravando: " + result['imdb_id'] + " tamanho fila: " + str(self.Q.qsize()))
-                    insert_sql = "INSERT INTO content_imdb (imdb_id, title, release_year, director, creator, main_actors, countries, languages, companies, genre, type, runtime, release_date, description, content_rating, rating, rating_count, reviews_count, keywords, filming_location, aka, poster_url, trailer_url, trailer_download_url, trailer_thumbnail_url, distributors) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    insert_sql = "INSERT INTO content_imdb (imdb_id, title, release_year, director, creator, main_actors, " \
+                                 "countries, languages, companies, genre, type, runtime, release_date, description, " \
+                                 "content_rating, rating, rating_count, reviews_count, keywords, filming_location, aka, " \
+                                 "poster_url, trailer_url, trailer_download_url, trailer_thumbnail_url, distributors, budget, gross_world) " \
+                                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     insert_values = [result['imdb_id'], result['title'], result['release_year'], result['director'],
                                      result['creator'], ','.join(result['main_actors']), ','.join(result['countries']),
                                      ','.join(result['languages']), ','.join(result['companies']),

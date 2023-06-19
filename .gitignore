@@ -4,3 +4,7 @@ venv/
 venv/*
 workers/__pycache__/
 workers/__pycache__/*
+source/
+source/*
+imdb_api/__pycache__/
+imdb_api/__pycache__/*
