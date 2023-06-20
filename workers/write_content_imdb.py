@@ -12,7 +12,7 @@ class WriteContentDb(object):
         self.db = mysql.connect(
             host="localhost",
             user="root",
-            password="abc123",
+            password="abcd1234",
             database="super_studios"
         )
         # abre ponteiro para escrever no banco
@@ -65,7 +65,7 @@ class WriteContentDb(object):
                                      result['reviews_count'], ','.join(result['keywords']), result['filming_location'],
                                      result['aka'], result['poster_url'], result['trailer_url'],
                                      result['trailer_download_url'], result['trailer_thumbnail_url'],
-                                     ','.join(result['distributors'])]
+                                     ','.join(result['distributors']), result['budget'], result['gross_world']]
                     try:
                         self.cursor.execute(insert_sql, insert_values)
                         self.db.commit()
