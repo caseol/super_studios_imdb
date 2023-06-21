@@ -1,5 +1,7 @@
 from datetime import datetime
+from unidecode import unidecode
 import mysql.connector as mysql
+import re
 import sys
 
 # cria conexão com o banco origem (super_studios = db_v1)
@@ -21,35 +23,45 @@ db_v2 = mysql.connect(
 cursor_v2 = db_v2.cursor(buffered=True)
 
 
+def normalize_string(str):
+    u = unidecode(str, "utf-8")
+    return unidecode(u)
+
+
+def capitalize_string(str):
+    return re.sub(r'\b[a-z]', lambda m: m.group().upper(), str.capitalize())
+
+
 def split_and_clean(string):
     list_result = []
     # verifica se a string não está vazia
     if string is not None and len(string) > 0:
         # faz o split e elimina espaços em branco
-        list_result = [s.strip() for s in string.split(',')]
+        list_result = [normalize_string(s.strip()) for s in string.split(',')]
 
     return list_result
 
 
-def fill_auxiliar_dictionary(table):
+def fill_auxiliary_dictionary(table):
     # carrega dicionarios com os valores das tabelas auxiliares para não precisar fazer busca todas as vezes
     sql_aux_dict = "Select t.id, t.name from " + table + " t"
     cursor_v2.execute(sql_aux_dict)
     auxiliar_results = cursor_v2.fetchall()
     dict_to_return = {}
     for (id, name) in auxiliar_results:
-        dict_to_return[name] = id
+        dict_to_return[normalize_string(name)] = id
 
     return dict_to_return
 
 
-def create_or_update_model_and_relation(_list, _content_id, _table,):
+def create_or_update_model_and_relation(_list, _content_id, _table):
+    item_id = None
     for item in _list:
         # cursor_v2.execute("select id, name from " + _table + " where name = %s", (item,))
         # if cursor_v2.rowcount > 0:
         # busca item no auxiliar_dictionary para saber se já existe
         #    result = cursor_v2.fetchone()
-        item_id = None
+
         if item in auxiliary_dictionary[_table].keys():
             # item já existe pega ID para criar relacionamento
             item_id = int(auxiliary_dictionary[_table][item])
@@ -69,12 +81,12 @@ def create_or_update_model_and_relation(_list, _content_id, _table,):
 
 print("[" + "{:%Y-%m-%d %H:%M:%S}".format(datetime.now()) + "][auxiliary_dictionary] Inicia o carregamento das tabelas auxiliares")
 # carrega os valores das tabelas auxiliares atuais em um dicionário em memória
-auxiliary_dictionary = {'director': fill_auxiliar_dictionary('director'), 'genre': fill_auxiliar_dictionary('genre'),
-                        'creator': fill_auxiliar_dictionary('creator'), 'actor': fill_auxiliar_dictionary('actor'),
-                        'country': fill_auxiliar_dictionary('country'), 'language': fill_auxiliar_dictionary('language'),
-                        'company': fill_auxiliar_dictionary('company'), 'keyword': fill_auxiliar_dictionary('keyword'),
-                        'film_location': fill_auxiliar_dictionary('film_location'),
-                        'distributor': fill_auxiliar_dictionary('distributor')}
+auxiliary_dictionary = {'director': fill_auxiliary_dictionary('director'), 'genre': fill_auxiliary_dictionary('genre'),
+                        'creator': fill_auxiliary_dictionary('creator'), 'actor': fill_auxiliary_dictionary('actor'),
+                        'country': fill_auxiliary_dictionary('country'), 'language': fill_auxiliary_dictionary('language'),
+                        'company': fill_auxiliary_dictionary('company'), 'keyword': fill_auxiliary_dictionary('keyword'),
+                        'film_location': fill_auxiliary_dictionary('film_location'),
+                        'distributor': fill_auxiliary_dictionary('distributor')}
 print("[" + "{:%Y-%m-%d %H:%M:%S}".format(datetime.now()) + "][auxiliary_dictionary] Tabelas auxiliares CARREGADAS!")
 
 # prepara para buscar todos os registros na tabela origem db_v1
@@ -107,7 +119,7 @@ for row in resultset_v1:
     create_or_update_model_and_relation(list_creator, content_id, 'creator')
 
     # pega infos de actor e faz o split
-    list_actor = split_and_clean(row['main_actors'])
+    list_actor = split_and_clean(capitalize_string(row['main_actors']))
     create_or_update_model_and_relation(list_actor, content_id, 'actor')
 
     # pega infos de country e faz o split
