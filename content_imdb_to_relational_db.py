@@ -31,29 +31,57 @@ def split_and_clean(string):
     return list_result
 
 
+def fill_auxiliar_dictionary(table):
+    # carrega dicionarios com os valores das tabelas auxiliares para não precisar fazer busca todas as vezes
+    sql_aux_dict = "Select t.id, t.name from " + table + " t"
+    cursor_v2.execute(sql_aux_dict)
+    auxiliar_results = cursor_v2.fetchall()
+    dict_to_return = {}
+    for (id, name) in auxiliar_results:
+        dict_to_return[name] = id
+
+    return dict_to_return
+
+
 def create_or_update_model_and_relation(_list, _content_id, _table):
     for item in _list:
-        cursor_v2.execute("select id, name from " + _table + " where name = %s", (item,))
-        if cursor_v2.rowcount > 0:
+        # cursor_v2.execute("select id, name from " + _table + " where name = %s", (item,))
+        # if cursor_v2.rowcount > 0:
+        # busca item no auxiliar_dictionary para saber se já existe
+        #    result = cursor_v2.fetchone()
+        if item in auxiliary_dictionary[_table].keys():
             # item já existe pega ID para criar relacionamento
-            result = cursor_v2.fetchone()
-            item_id = int(result['id'])
+            item_id = int(auxiliary_dictionary[_table][item])
         else:
             # item não existe na tabela cria um novo
-            cursor_v2.execute("insert into " + _table + " (name) values (%s)", [item])
-            item_id = cursor_v2.lastrowid
-            db_v2.commit()
-        # inclui o content_id e item na tabela de relacionamento propria
-        cursor_v2.execute("insert into content_" + _table + " (content_id, " + _table + "_id) values (%s, %s)", [content_id, item_id])
-        db_v2.commit()
+            if len(item) <= 150:
+                cursor_v2.execute("insert into " + _table + " (name) values (%s)", [item])
+                item_id = cursor_v2.lastrowid
+                db_v2.commit()
+                # inclui no auxiliar_dictionary
+                auxiliary_dictionary[_table][item] = item_id
 
+                # inclui o content_id e item na tabela de relacionamento propria
+        cursor_v2.execute("insert into content_" + _table + " (content_id, " + _table + "_id) values (%s, %s)", [content_id, item_id])
+
+
+print("[" + "{:%Y-%m-%d %H:%M:%S}".format(datetime.now()) + "][auxiliary_dictionary] Inicia o carregamento das tabelas auxiliares")
+# carrega os valores das tabelas auxiliares atuais em um dicionário em memória
+auxiliary_dictionary = {'director': fill_auxiliar_dictionary('director'), 'genre': fill_auxiliar_dictionary('genre'),
+                        'creator': fill_auxiliar_dictionary('creator'), 'actor': fill_auxiliar_dictionary('actor'),
+                        'country': fill_auxiliar_dictionary('country'), 'language': fill_auxiliar_dictionary('language'),
+                        'company': fill_auxiliar_dictionary('company'), 'keyword': fill_auxiliar_dictionary('keyword'),
+                        'film_location': fill_auxiliar_dictionary('film_location'),
+                        'distributor': fill_auxiliar_dictionary('distributor')}
+print("[" + "{:%Y-%m-%d %H:%M:%S}".format(datetime.now()) + "][auxiliary_dictionary] Tabelas auxiliares CARREGADAS!")
 
 # prepara para buscar todos os registros na tabela origem db_v1
-sql_select_v1 = "select * from super_studios.content_imdb"
+sql_select_v1 = "select * from super_studios.content_imdb where id > 191885"
 cursor_v1.execute(sql_select_v1)
 
 # print("Total de registros em super_studios.content_imdb: " + str(cursor_v1.rowcount))
 print("QUERY EXECUTADA!")
+
 
 # percorre todos os registros do banco origem db_v1 e separa os registros no banco destino db_v2
 resultset_v1 = cursor_v1.fetchall()
@@ -103,6 +131,7 @@ for row in resultset_v1:
     list_distributor = split_and_clean(row['distributors'])
     create_or_update_model_and_relation(list_distributor, content_id, 'distributor')
 
+    db_v2.commit()
     print("[FIM][" + "{:%Y-%m-%d %H:%M:%S}".format(datetime.now()) + "][PROCESSADO] ID: " + str(row['id']) + " - IMDB_ID: " + row['imdb_id'] + " - TITLE: " + row['title'])
 
 
