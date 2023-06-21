@@ -125,7 +125,7 @@ for row in resultset_v1:
     create_or_update_model_and_relation(list_creator, content_id, 'creator')
 
     # pega infos de actor e faz o split
-    list_actor = split_and_clean(capitalize_string(row['main_actors']))
+    list_actor = split_and_clean(row['main_actors'])
     create_or_update_model_and_relation(list_actor, content_id, 'actor')
 
     # pega infos de country e faz o split
