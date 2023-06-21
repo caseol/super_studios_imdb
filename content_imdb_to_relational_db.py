@@ -24,12 +24,18 @@ cursor_v2 = db_v2.cursor(buffered=True)
 
 
 def normalize_string(str):
-    u = unidecode(str, "utf-8")
-    return unidecode(u)
+    if str is not None:
+        u = unidecode(str, "utf-8")
+        return unidecode(u)
+    else:
+        return str
 
 
 def capitalize_string(str):
-    return re.sub(r'\b[a-z]', lambda m: m.group().upper(), str.capitalize())
+    if str is not None:
+        return re.sub(r'\b[a-z]', lambda m: m.group().upper(), str.capitalize())
+    else:
+        return str
 
 
 def split_and_clean(string):
